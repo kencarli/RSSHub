@@ -1,5 +1,5 @@
 import { Route } from '@/types';
-import { got } from '@/utils/got';
+import got from '@/utils/got';
 import { load } from 'cheerio';
 
 // 定义漫画网站的主机地址和用户代理
