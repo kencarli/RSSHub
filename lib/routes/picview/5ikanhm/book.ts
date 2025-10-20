@@ -17,10 +17,10 @@ export const route: Route = {
         },
     ],
     name: '漫小肆漫画',
-    maintainers: ['维护者名称'],
+    maintainers: ['K33k0'],
     categories: ['漫画'],
     handler,
-    url: '5ikanhm.top',
+    url: 'https://5ikanhm.top',
 };
 
 async function handler(ctx) {
@@ -45,8 +45,7 @@ async function handler(ctx) {
                 link: itemLink,
             };
             
-            // 缓存章节页面内容，避免重复请求
-            const details = await ctx.cache.tryGet(itemLink, async () => {
+            try {
                 // 具体页面限制手机UA
                 const response = await got.get(itemLink, {
                     headers: {
@@ -64,20 +63,19 @@ async function handler(ctx) {
                     const $ele = $(ele);
                     const src = $ele.attr('data-original');
                     if (src) {
-                        picsArray.push(`<img src="${encodeURIComponent(src)}"> `);
-                    } else {
-                        console.warn('Invalid or missing data-original attribute:', ele);
+                        picsArray.push(`<img src="${src}">`);
                     }
                 });
                 
                 const pics = picsArray.join('');
                 return {
+                    ...simple,
                     description: pics
                 };
-            });
-            
-            // 合并章节基本信息和详细信息
-            return Object.assign({}, simple, details);
+            } catch (err) {
+                // 如果获取详细信息失败，至少返回基本信息
+                return simple;
+            }
         })
     );
     
