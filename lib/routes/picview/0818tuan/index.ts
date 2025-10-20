@@ -6,9 +6,9 @@ import { parseDate } from '@/utils/parse-date';
 import timezone from '@/utils/timezone';
 
 export const route: Route = {
-    path: '/:listId?',
+    path: '/0818tuan/index/:listId?',
     categories: ['shopping'],
-    example: '/0818tuan',
+    example: '/picview/0818tuan/index',
     parameters: { listId: '活动分类，见下表，默认为 `1`' },
     features: {
         requireConfig: false,
