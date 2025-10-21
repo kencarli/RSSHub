@@ -10,12 +10,18 @@ export const route: Route = {
     path: '/cninfo/announcement/:column/:code/:orgId/:category?/:search?',
     categories: ['finance'],
     example: '/financialview/cninfo/announcement/sse/688182/nssc1000567/all',
-    parameters: {column:'漫画ID',code:'股票代码',orgId:'巨潮股票代码',category:'分类',searchKey:'标题关键字',},
-    radar: [
-    {
-        source: ['www.cninfo.com.cn/*'],
-        target: '/new/disclosure',
+    parameters: {
+        column: '板块代码: szse 深圳证券交易所; sse 上海证券交易所; third 新三板; hke 港股; fund 基金',
+        code: '股票代码',
+        orgId: '巨潮机构ID',
+        category: '分类 (默认=all)',
+        search: '标题关键字 (默认为空)',
     },
+    radar: [
+        {
+            source: ['www.cninfo.com.cn/*'],
+            target: '/new/disclosure',
+        },
     ],
     features: {
         requireConfig: false,
@@ -32,15 +38,16 @@ export const route: Route = {
 };
 
 async function handler(ctx) {
-    const column = ctx.params.column; // szse 深圳证券交易所; sse 上海证券交易所; hke 港股; fund 基金
-    const code = ctx.params.code; //  股票代码
-    const orgId = ctx.params.orgId;
-    const category = ctx.params.category || 'all'; //  分类
-    const searchKey = ctx.params.search || ''; //  标题关键字
+    const column = ctx.req.param('column'); // szse 深圳证券交易所; sse 上海证券交易所; third 新三板; hke 港股; fund 基金
+    const code = ctx.req.param('code'); //  股票代码
+    const orgId = ctx.req.param('orgId');
+    const category = ctx.req.param('category') || 'all'; //  分类
+    const searchKey = ctx.req.param('search') || ''; //  标题关键字
     let plate = '';
-  
+
     const rssUrl = `http://www.cninfo.com.cn/new/disclosure/stock?stockCode=${code}&orgId=${orgId}`;
     const apiUrl = `http://www.cninfo.com.cn/new/hisAnnouncement/query`;
+    
     switch (column) {
         case 'szse':
             plate = 'sz';
@@ -57,10 +64,14 @@ async function handler(ctx) {
         case 'fund':
             plate = 'fund';
             break;
+        default:
+            plate = '';
     }
+    
     const response = await got.post(apiUrl, {
         headers: {
             Referer: rssUrl,
+            'User-Agent': ua,
         },
         form: {
             stock: `${code},${orgId}`,
@@ -78,32 +89,58 @@ async function handler(ctx) {
             isHLtitle: true,
         },
     });
+    
     // 获取列表
     const announcementsList = response.data.announcements;
     let name = '';   
     
-    // 并发请求获取每个章节的详细信息
-    let ecname = '';
-    const out = announcementsList.map((item) => {
-        const title = item.announcementTitle;
-        const date = item.announcementTime;
-        const announcementTime = new Date(item.announcementTime).toISOString().slice(0, 10);
-        const link = 'http://www.cninfo.com.cn/new/disclosure/detail' + `?plate=${plate}` + `&orgId=${orgId}` + `&stockCode=${code}` + `&announcementId=${item.announcementId}` + `&announcementTime=${announcementTime}`;
-        ecname = item.secName;
+    // 处理公告列表
+    const items = await Promise.all(
+        announcementsList.map((item) => {
+            const title = item.announcementTitle;
+            const date = item.announcementTime;
+            const announcementTime = new Date(item.announcementTime).toISOString().slice(0, 10);
+            const link = 'http://www.cninfo.com.cn/new/disclosure/detail' + 
+                        `?plate=${plate}` + 
+                        `&orgId=${orgId}` + 
+                        `&stockCode=${code}` + 
+                        `&announcementId=${item.announcementId}` + 
+                        `&announcementTime=${announcementTime}`;
+            name = item.secName;
 
-        const single = {
-            title,
-            link,
-            pubDate: new Date(date).toUTCString(),
-        };
+            return cache.tryGet(link, async () => {
+                const single = {
+                    title,
+                    link,
+                    pubDate: new Date(date).toUTCString(),
+                };
 
-        return single;
-    });
+                // 尝试获取公告详情内容
+                try {
+                    const detailResponse = await got.get(link, {
+                        headers: {
+                            Referer: rssUrl,
+                            'User-Agent': ua,
+                        }
+                    });
+                    const $ = load(detailResponse.data);
+                    $('#contentStr img').each((_, img) => {
+                        $(img).attr('referrerpolicy', 'no-referrer');
+                    });
+                    single.description = $('#contentStr').html() || '';
+                } catch (error) {
+                    // 如果获取详情失败，保持没有description的状态
+                }
+
+                return single;
+            });
+        })
+    );
     
     // 构造RSS feed的数据结构
     return {
-        title: `${ecname}公告-巨潮资讯`,  //rsshub 订阅大标题
-        link: rssUrl,  //rsshub 订阅链接
-        item: items,  // rsshub 订阅链接 子项，页面展开
+        title: `${name}公告-巨潮资讯`,  // RSS订阅标题
+        link: rssUrl,  // RSS订阅链接
+        item: items,   // RSS条目列表
     };
 }
