@@ -4,14 +4,19 @@ import got from '@/utils/got';
 import { load } from 'cheerio';
 
 // 定义网站的主机地址和用户代理
-const host = 'https://www.867xe.com/';
 const ua = 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Mobile Safari/537.36';
 
 export const route: Route = {
     path: '/cninfo/announcement/:column/:code/:orgId/:category?/:search?',
     categories: ['finance'],
-    example: 'financialview/cninfo/announcement/:column/:code/:orgId/:category?/:search?',
-    parameters: {},
+    example: '/financialview/cninfo/announcement/sse/688182/nssc1000567/all',
+    parameters: {column:'漫画ID',code:'股票代码',orgId:'巨潮股票代码',category:'分类',searchKey:'标题关键字',},
+    radar: [
+    {
+        source: ['www.cninfo.com.cn/*'],
+        target: '/new/disclosure',
+    },
+    ],
     features: {
         requireConfig: false,
         requirePuppeteer: false,
@@ -23,7 +28,7 @@ export const route: Route = {
     name: '巨潮资讯',
     maintainers: ['YourName'],
     handler,
-    description: `巨潮资讯`,
+    url: 'http://www.cninfo.com.cn',
 };
 
 async function handler(ctx) {
@@ -34,7 +39,7 @@ async function handler(ctx) {
     const searchKey = ctx.params.search || ''; //  标题关键字
     let plate = '';
   
-    const url = `http://www.cninfo.com.cn/new/disclosure/stock?stockCode=${code}&orgId=${orgId}`;
+    const rssUrl = `http://www.cninfo.com.cn/new/disclosure/stock?stockCode=${code}&orgId=${orgId}`;
     const apiUrl = `http://www.cninfo.com.cn/new/hisAnnouncement/query`;
     switch (column) {
         case 'szse':
@@ -55,7 +60,7 @@ async function handler(ctx) {
     }
     const response = await got.post(apiUrl, {
         headers: {
-            Referer: url,
+            Referer: rssUrl,
         },
         form: {
             stock: `${code},${orgId}`,
@@ -98,7 +103,7 @@ async function handler(ctx) {
     // 构造RSS feed的数据结构
     return {
         title: `${ecname}公告-巨潮资讯`,  //rsshub 订阅大标题
-        link: url,  //rsshub 订阅链接
+        link: rssUrl,  //rsshub 订阅链接
         item: items,  // rsshub 订阅链接 子项，页面展开
     };
 }
