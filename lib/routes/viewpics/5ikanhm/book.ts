@@ -8,7 +8,7 @@ const ua = 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/5
 
 export const route: Route = {
     path: '/5ikanhm/book/:id',
-    example: '/viewpic/5ikanhm/book/123',
+    example: '/viewpics/5ikanhm/book/123',
     parameters: { id: '漫画ID' },
     radar: [
         {
