@@ -4,12 +4,12 @@ import got from '@/utils/got';
 import { load } from 'cheerio';
 
 // 定义网站的主机地址和用户代理
-const ua = 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.3.4103.116 Mobile Safari/537.36';
+const ua = 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Mobile Safari/537.36';
 
 export const route: Route = {
     path: '/cninfo/announcement/:column/:code/:orgId/:category?/:search?',
     categories: ['finance'],
-    example: '/financialview/cninfo/announcement/sse/688182/nssc1000567/all',
+    example: '/viewfinancial/cninfo/announcement/sse/688182/nssc1000567/all',
     parameters: {
         column: '板块代码: szse 深圳证券交易所; sse 上海证券交易所; third 新三板; hke 港股; fund 基金',
         code: '股票代码',
@@ -91,7 +91,7 @@ async function handler(ctx) {
     });
     
     // 获取列表
-    const announcementsList = response.data.announcements;
+    const announcementsList = response.data.announcements || [];
     let secIdname = '';   
     
     // 处理公告列表
