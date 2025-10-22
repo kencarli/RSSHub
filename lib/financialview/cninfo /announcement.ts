@@ -68,7 +68,7 @@ async function handler(ctx) {
             plate = '';
     }
     
-    const response = await got.post(apiUrl, {
+    const response = await got.get(apiUrl, {
         headers: {
             Referer: rssUrl,
             'User-Agent': ua,
@@ -92,11 +92,13 @@ async function handler(ctx) {
     
     // 获取列表
     const announcementsList = response.data.announcements;
-    let name = '';   
+    let secIdname = '';   
     
     // 处理公告列表
     const items = await Promise.all(
         announcementsList.map((item) => {
+            // 解析每个章节的链接和标题
+            item = $(item);
             const title = item.announcementTitle;
             const date = item.announcementTime;
             const announcementTime = new Date(item.announcementTime).toISOString().slice(0, 10);
@@ -106,40 +108,21 @@ async function handler(ctx) {
                         `&stockCode=${code}` + 
                         `&announcementId=${item.announcementId}` + 
                         `&announcementTime=${announcementTime}`;
-            name = item.secName;
+            secIdname = item.secName;
 
-            return cache.tryGet(link, async () => {
-                const single = {
-                    title,
-                    link,
-                    pubDate: new Date(date).toUTCString(),
-                };
+            const single = {
+                title,
+                link,
+                pubDate: new Date(date).toUTCString(),
+            };
 
-                // 尝试获取公告详情内容
-                try {
-                    const detailResponse = await got.get(link, {
-                        headers: {
-                            Referer: rssUrl,
-                            'User-Agent': ua,
-                        }
-                    });
-                    const $ = load(detailResponse.data);
-                    $('#contentStr img').each((_, img) => {
-                        $(img).attr('referrerpolicy', 'no-referrer');
-                    });
-                    single.description = $('#contentStr').html() || '';
-                } catch (error) {
-                    // 如果获取详情失败，保持没有description的状态
-                }
-
-                return single;
-            });
+            return single;
         })
     );
     
     // 构造RSS feed的数据结构
     return {
-        title: `${name}公告-巨潮资讯`,  // RSS订阅标题
+        title: `${secIdname}公告-巨潮资讯`,  // RSS订阅标题
         link: rssUrl,  // RSS订阅链接
         item: items,   // RSS条目列表
     };
