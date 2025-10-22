@@ -6,10 +6,10 @@ import { parseDate } from '@/utils/parse-date';
 import timezone from '@/utils/timezone';
 
 export const route: Route = {
-    path: '/hearinghealth/category/:category?',
+    path: '/hearinghealth/category/better-hearing-consumer/',
     categories: ['hearingnews'],
     example: '/hearinghealth/category/better-hearing-consumer/',
-    parameters: { column: '板块代码: bhc better-hearing-consumer; hnw hearing-news-watch ; he hearing-economics; ht hearing-technologies', },
+    //parameters: { column: '板块代码: bhc better-hearing-consumer; hnw hearing-news-watch ; he hearing-economics; ht hearing-technologies', },
     features: {
         requireConfig: false,
         requirePuppeteer: false,
@@ -26,7 +26,7 @@ export const route: Route = {
 async function handler(ctx) {
     const baseUrl = 'https://hearinghealthmatters.org'; // bhc better-hearing-consumer; hnw hearing-news-watch ; he hearing-economics; ht hearing-technologies
     const column = ctx.req.param('column'); //  bhc better-hearing-consumer; hnw hearing-news-watch ; he hearing-economics; ht hearing-technologies
-    const url = `${baseUrl}/category/${column}/`;
+    const url = `${baseUrl}/category/better-hearing-consumer/`;
 
     const { data: response } = await got(url);
     const $ = load(response);
