@@ -9,7 +9,7 @@ const ua = 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/5
 export const route: Route = {
     path: '/cninfo/announcement/:column/:code/:orgId/:category?/:search?',
     categories: ['finance'],
-    example: '/financialview/cninfo/announcement/sse/688182/nssc1000567/all',
+    example: '/cninfo/announcement/sse/688182/nssc1000567/all',
     parameters: {
         column: '板块代码: szse 深圳证券交易所; sse 上海证券交易所; third 新三板; hke 港股; fund 基金',
         code: '股票代码',
@@ -92,7 +92,7 @@ async function handler(ctx) {
     
     // 获取列表
     const announcementsList = response.data.announcements || [];
-    let secIdname = '';   
+    let name = '';   
     
     // 处理公告列表
     const items = await Promise.all(
@@ -106,7 +106,7 @@ async function handler(ctx) {
                         `&stockCode=${code}` + 
                         `&announcementId=${item.announcementId}` + 
                         `&announcementTime=${announcementTime}`;
-            secIdname = item.secName;
+            name = item.secName;
 
             return cache.tryGet(link, async () => {
                 const single = {
@@ -139,7 +139,7 @@ async function handler(ctx) {
     
     // 构造RSS feed的数据结构
     return {
-        title: `${secIdname}公告-巨潮资讯`,  // RSS订阅标题
+        title: `${name}公告-巨潮资讯`,  // RSS订阅标题
         link: rssUrl,  // RSS订阅链接
         item: items,   // RSS条目列表
     };
