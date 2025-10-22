@@ -9,7 +9,7 @@ const ua = 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/5
 export const route: Route = {
     path: '/cninfo/announcement/:column/:code/:orgId/:category?/:search?',
     categories: ['finance'],
-    example: '/viewfinancial/cninfo/announcement/sse/688182/nssc1000567/all',
+    example: '/financialview/cninfo/announcement/sse/688182/nssc1000567/all',
     parameters: {
         column: '板块代码: szse 深圳证券交易所; sse 上海证券交易所; third 新三板; hke 港股; fund 基金',
         code: '股票代码',
