@@ -7,8 +7,8 @@ import timezone from '@/utils/timezone';
 
 export const route: Route = {
     path: '/hearinghealth/category/:listId?',
-    categories: ['hearingnew'],
-    example: '/hearinghealth/category/better-hearing-consumer/',
+    categories: ['hearingnews'],
+    example: '/hearinghealth/category/1/',
     parameters: { listId: '活动分类，见下表，默认为 `1`' },
     features: {
         requireConfig: false,
@@ -22,8 +22,8 @@ export const route: Route = {
     maintainers: ['TonyRL'],
     handler,
     description: `| better-hearing-consumer | hearing-news-watch | hearing-economics | hearing-technologies |
-| -------- | -------- | ------ | -------- |
-| 1        | 2        | 3      | 4      |`,
+ | -------- | -------- | ------ | -------- |
+ | 1        | 2        | 3      | 4        |`,
 };
 
 async function handler(ctx) {
