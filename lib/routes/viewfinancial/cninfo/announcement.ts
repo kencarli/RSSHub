@@ -4,12 +4,12 @@ import got from '@/utils/got';
 import { load } from 'cheerio';
 
 // 定义网站的主机地址和用户代理
-const ua = 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Mobile Safari/537.36';
+const ua = 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.3.4103.116 Mobile Safari/537.36';
 
 export const route: Route = {
     path: '/cninfo/announcement/:column/:code/:orgId/:category?/:search?',
     categories: ['finance'],
-    example: '/viewfinancial/cninfo/announcement/sse/688182/nssc1000567/all',
+    example: '/financialview/cninfo/announcement/sse/688182/nssc1000567/all',
     parameters: {
         column: '板块代码: szse 深圳证券交易所; sse 上海证券交易所; third 新三板; hke 港股; fund 基金',
         code: '股票代码',
@@ -68,7 +68,7 @@ async function handler(ctx) {
             plate = '';
     }
     
-    const response = await got.get(apiUrl, {
+    const response = await got.post(apiUrl, {
         headers: {
             Referer: rssUrl,
             'User-Agent': ua,
@@ -97,8 +97,6 @@ async function handler(ctx) {
     // 处理公告列表
     const items = await Promise.all(
         announcementsList.map((item) => {
-            // 解析每个章节的链接和标题
-            item = $(item);
             const title = item.announcementTitle;
             const date = item.announcementTime;
             const announcementTime = new Date(item.announcementTime).toISOString().slice(0, 10);
@@ -110,13 +108,32 @@ async function handler(ctx) {
                         `&announcementTime=${announcementTime}`;
             secIdname = item.secName;
 
-            const single = {
-                title,
-                link,
-                pubDate: new Date(date).toUTCString(),
-            };
+            return cache.tryGet(link, async () => {
+                const single = {
+                    title,
+                    link,
+                    pubDate: new Date(date).toUTCString(),
+                };
 
-            return single;
+                // 尝试获取公告详情内容
+                try {
+                    const detailResponse = await got.get(link, {
+                        headers: {
+                            Referer: rssUrl,
+                            'User-Agent': ua,
+                        }
+                    });
+                    const $ = load(detailResponse.data);
+                    $('#contentStr img').each((_, img) => {
+                        $(img).attr('referrerpolicy', 'no-referrer');
+                    });
+                    single.description = $('#contentStr').html() || '';
+                } catch (error) {
+                    // 如果获取详情失败，保持没有description的状态
+                }
+
+                return single;
+            });
         })
     );
     
