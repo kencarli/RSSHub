@@ -6,10 +6,10 @@ import { parseDate } from '@/utils/parse-date';
 import timezone from '@/utils/timezone';
 
 export const route: Route = {
-    path: '/hearinghealth/category/:listId?',
+    path: '/hearinghealth/category/:category?',
     categories: ['hearingnews'],
-    example: '/hearinghealth/category/1/',
-    parameters: { listId: '活动分类，见下表，默认为 `1`' },
+    example: '/hearinghealth/category/better-hearing-consumer/',
+    parameters: { column: '板块代码: bhc better-hearing-consumer; hnw hearing-news-watch ; he hearing-economics; ht hearing-technologies', },
     features: {
         requireConfig: false,
         requirePuppeteer: false,
@@ -21,15 +21,12 @@ export const route: Route = {
     name: '分类',
     maintainers: ['TonyRL'],
     handler,
-    description: `| better-hearing-consumer | hearing-news-watch | hearing-economics | hearing-technologies |
- | ----------------------- | ------------------ | ----------------- | -------------------- |
- | 1                       | 2                  | 3                 | 4                    |`,
 };
 
 async function handler(ctx) {
-    const baseUrl = 'https://hearinghealthmatters.org';
-    const listId = ctx.req.param('listId') || '1';
-    const url = `${baseUrl}/category/${listId}/`;
+    const baseUrl = 'https://hearinghealthmatters.org'; // bhc better-hearing-consumer; hnw hearing-news-watch ; he hearing-economics; ht hearing-technologies
+    const column = ctx.req.param('column'); //  bhc better-hearing-consumer; hnw hearing-news-watch ; he hearing-economics; ht hearing-technologies
+    const url = `${baseUrl}/category/${column}/`;
 
     const { data: response } = await got(url);
     const $ = load(response);
