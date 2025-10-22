@@ -31,12 +31,12 @@ async function handler(ctx) {
     const { data: response } = await got(url);
     const $ = load(response);
     
-    const list = $('#sticky > div > div > div > div > div.x-col.e10758-e9.m8au-m.m8au-n > div > div > a')
+    const list = $('#sticky > div > div > div > div > div > div > div > a')
         .toArray()
         .map((item) => {
             const $item = $(item);
             return {
-                title: $item.text().trim(),
+                title: $item.find(' > article > div > div > div > h2').text(),
                 link: $item.attr('href')?.startsWith('http') 
                     ? $item.attr('href') 
                     : `${baseUrl}${$item.attr('href')}`,
@@ -53,7 +53,7 @@ async function handler(ctx) {
 
                     item.description = $('.article').html() || '';
                     
-                    const pubDateText = $('.article .date-selector').text(); // 使用更通用的选择器
+                    const pubDateText = $('.article > div > div > div > div > div > div > div > div').text(); // 使用更通用的选择器
                     if (pubDateText) {
                         item.pubDate = timezone(
                             parseDate(pubDateText.replace('时间:', '').trim(), 'YYYY-MM-DD HH:mm:ss'), 
