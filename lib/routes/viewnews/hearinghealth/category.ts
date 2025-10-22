@@ -22,8 +22,8 @@ export const route: Route = {
     maintainers: ['TonyRL'],
     handler,
     description: `| better-hearing-consumer | hearing-news-watch | hearing-economics | hearing-technologies |
- | -------- | -------- | ------ | -------- |
- | 1        | 2        | 3      | 4        |`,
+ | ----------------------- | ------------------ | ----------------- | -------------------- |
+ | 1                       | 2                  | 3                 | 4                    |`,
 };
 
 async function handler(ctx) {
