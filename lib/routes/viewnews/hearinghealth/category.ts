@@ -30,12 +30,8 @@ async function handler(ctx) {
 
     const { data: response } = await got(url);
     const $ = load(response);
-
-    const selector = listId === '3' 
-        ? '#sticky > div > div > div > div > div.x-col.e10758-e9.m8au-m.m8au-n > div > div > a'
-        : 'article h2 a'; // 更通用的选择器作为默认值
-
-    const list = $(selector)
+    
+    const list = $('#sticky > div > div > div > div > div.x-col.e10758-e9.m8au-m.m8au-n > div > div > a')
         .toArray()
         .map((item) => {
             const $item = $(item);
