@@ -6,10 +6,10 @@ import { parseDate } from '@/utils/parse-date';
 import timezone from '@/utils/timezone';
 
 export const route: Route = {
-    path: '/hearinghealth/category/better-hearing-consumer/',
+    path: '/hearinghealth/category/:category?',
     categories: ['hearingnews'],
-    example: '/hearinghealth/category/better-hearing-consumer/',
-    //parameters: { column: '板块代码: bhc better-hearing-consumer; hnw hearing-news-watch ; he hearing-economics; ht hearing-technologies', },
+    example: '/hearinghealth/category/better-hearing-consumer',
+    parameters: { category: 'Category slug, e.g. better-hearing-consumer, hearing-news-watch, hearing-economics, hearing-technologies' },
     features: {
         requireConfig: false,
         requirePuppeteer: false,
@@ -18,51 +18,45 @@ export const route: Route = {
         supportPodcast: false,
         supportScihub: false,
     },
-    name: '分类',
+    name: 'Category',
     maintainers: ['TonyRL'],
     handler,
+    description: `| Better Hearing Consumer | Hearing News Watch | Hearing Economics | Hearing Technologies |
+| -------------------- | ------------------ | ----------------- | ------------------ |
+| better-hearing-consumer | hearing-news-watch | hearing-economics | hearing-technologies |`,
 };
 
 async function handler(ctx) {
-    const baseUrl = 'https://hearinghealthmatters.org'; // bhc better-hearing-consumer; hnw hearing-news-watch ; he hearing-economics; ht hearing-technologies
-    const column = ctx.req.param('column'); //  bhc better-hearing-consumer; hnw hearing-news-watch ; he hearing-economics; ht hearing-technologies
-    const url = `${baseUrl}/category/better-hearing-consumer/`;
+    const baseUrl = 'https://hearinghealthmatters.org';
+    const category = ctx.req.param('category') || 'better-hearing-consumer';
+    const url = `${baseUrl}/category/${category}/`;
 
     const { data: response } = await got(url);
     const $ = load(response);
-    
-    const list = $('#sticky > div > div > div > div > div > div > div > a')
+
+    const list = $('article')
         .toArray()
         .map((item) => {
             const $item = $(item);
+            const $link = $item.find('h2 a').first();
+            
             return {
-                title: $item.find(' > article > div > div > div > h2').text(),
-                link: $item.attr('href')?.startsWith('http') 
-                    ? $item.attr('href') 
-                    : `${baseUrl}${$item.attr('href')}`,
+                title: $link.text().trim(),
+                link: $link.attr('href') || '',
             };
         })
-        .filter((item) => item.title && item.link); // 过滤掉空标题或链接的项目
+        .filter((i) => i.title && i.link);
 
     const items = await Promise.all(
         list.map((item) =>
             cache.tryGet(item.link, async () => {
-                try {
-                    const { data: response } = await got(item.link);
-                    const $ = load(response);
+                const { data: response } = await got(item.link);
+                const $ = load(response);
 
-                    item.description = $('.article').html() || '';
-                    
-                    const pubDateText = $('.article > div > div > div > div > div > div > div > div').text(); // 使用更通用的选择器
-                    if (pubDateText) {
-                        item.pubDate = timezone(
-                            parseDate(pubDateText.replace('时间:', '').trim(), 'YYYY-MM-DD HH:mm:ss'), 
-                            +8
-                        ).toUTCString();
-                    }
-                } catch (err) {
-                    // 错误处理，保持项目但不添加描述和日期
-                }
+                $('.pageLink, .alert, p[style="margin:15px;"]').remove();
+
+                item.description = $('.entry-content').html();
+                item.pubDate = timezone(parseDate($('.entry-meta .updated').attr('datetime') || $('.entry-date').text().trim()), +8);
 
                 return item;
             })
@@ -72,7 +66,7 @@ async function handler(ctx) {
     return {
         title: $('head > title').text(),
         link: url,
-        image: 'https://hearinghealthmatters.org/wp-content/uploads/2021/08/2Hearing-Health-Technology-Matters-logo.png',
+        image: 'https://hearinghealthmatters.org/wp-content/uploads/2021/08/HHTM-Favicon-75x75.png',
         item: items,
     };
 }
