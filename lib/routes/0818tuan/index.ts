@@ -21,9 +21,9 @@ export const route: Route = {
     name: '分类',
     maintainers: ['TonyRL'],
     handler,
-    description: `| 最新线报 | 实测活动 | 优惠券 |
-| -------- | -------- | ------ |
-| 1        | 2        | 3      |`,
+    description: `| 最新线报 | 优惠券 |
+| -------- | ------ |
+| 1        | 3      |`,
 };
 
 async function handler(ctx) {
@@ -62,7 +62,7 @@ async function handler(ctx) {
     );
 
     return {
-        title: $('head title').text(),
+        title: $('head > title').text(),
         link: url,
         image: 'http://www.0818tuan.com/favicon.ico',
         item: items,
