@@ -75,7 +75,7 @@
   "/005/:category?": [
     "nczitzk"
   ],
-  "/0818tuan/:listId?": [
+  "/0818tuan/0818tuan/index/:listId?": [
     "TonyRL"
   ],
   "/0x80/blog": [
@@ -8428,6 +8428,30 @@
     "TonyRL"
   ],
   "/vice/topic/:topic/:language?": [
+    "K33k0"
+  ],
+  "/viewfinancial/cninfo/announcement/:column/:code/:orgId/:category?/:search?": [
+    "YourName"
+  ],
+  "/viewnews/hearinghealth/category/:category?": [
+    "TonyRL"
+  ],
+  "/viewpics/24me/mc/:id": [
+    "K33k0"
+  ],
+  "/viewpics/5ikanhm/book/:id": [
+    "K33k0"
+  ],
+  "/viewpics/867xe/picture": [
+    "K33k0"
+  ],
+  "/viewpics/taotu/picture": [
+    "K33k0"
+  ],
+  "/viewpics/wangyouzipai/category": [
+    "K33k0"
+  ],
+  "/viewpics/xman5/mdetail/:id": [
     "K33k0"
   ],
   "/vimeo/category/:category/:staffpicks?": [
